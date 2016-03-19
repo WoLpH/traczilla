@@ -52,3 +52,16 @@ To remove **all** webhooks on your acccount:
 
     Trello.get('/members/me/tokens?webhooks=true', success, error);
 
+To configure, add something along these lines in your configuration file:
+
+..
+    [trello]
+    api_key = ...
+    token = ...
+    # Allow creation from these boards
+    create_from_boards = board-id, board-id
+    # Which organisations to index
+    organisations = organisation-id, organisation-id
+
+    [trello-component]
+    trac-component-name = trello-board-id
