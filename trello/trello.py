@@ -366,7 +366,7 @@ class TrelloTracPlugin(core.Component):
 
     def get_organisations(self, client=None):
         client = client or self.get_trello_client()
-        for organisation_id in self.organisations_ids:
+        for organisation_id in self.organisation_ids:
             yield client.get_organisation(organisation_id)
 
     def get_boards(self):
@@ -426,7 +426,7 @@ class TrelloTracPlugin(core.Component):
         self.env.log.info('ticket created: %r', ticket.__dict__)
 
         new_list = self.get_new_list(ticket)
-        new_list.add_card(dict(
+        return new_list.add_card(dict(
             name=self.get_trello_name(ticket),
             desc=self.get_trello_description(ticket),
         ))
@@ -454,11 +454,16 @@ class TrelloTracPlugin(core.Component):
                     ticket.trello = card['url']
                     ticket.save_changes(
                         author, '[trello] Updated trello url to %(url)s' % card)
-                    shortlink = card['shortLink']
                     break
 
         if not shortlink:
             self.env.log.warn('No Trello card found for %r', ticket)
+            created = self.ticket_created(ticket)
+            created_data = created.data
+            shortlink = created_data['shortUrl'].split('/')[-1]
+            ticket.trello = created_data['url']
+            ticket.save_changes(
+                author, '[trello] Updated trello url to %(url)s' % created_data)
 
         self.env.log.info('Adding comment from %r on %r to trello', author,
                           ticket)
